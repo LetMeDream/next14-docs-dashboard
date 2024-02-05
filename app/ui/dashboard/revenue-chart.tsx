@@ -1,7 +1,6 @@
 import { generateYAxis } from '@/app/lib/utils';
 import { CalendarIcon } from '@heroicons/react/24/outline';
-import { lusitana } from '@/app/ui/fonts';
-import { Revenue } from '@/app/lib/definitions';
+import { lucy } from '@/app/ui/fonts';import { Revenue } from '@/app/lib/definitions';
 
 // This component is representational only.
 // For data visualization UI, check out:
@@ -25,7 +24,7 @@ export default async function RevenueChart({
 
   return (
     <div className="w-full md:col-span-4">
-      <h2 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+      <h2 className={`${lucy.className} mb-4 text-xl md:text-2xl`}>
         Recent Revenue
       </h2>
       {/* NOTE: comment in this code when you get to this point in the course */}
