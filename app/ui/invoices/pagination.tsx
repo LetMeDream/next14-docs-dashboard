@@ -4,17 +4,53 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { generatePagination } from '@/app/lib/utils';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function Pagination({ totalPages }: { totalPages: number }) {
   // NOTE: comment in this code when you get to this point in the course
+  const searchParams = useSearchParams()
+  let currentPage = Number(searchParams.get('page')) || 1
+  const params = useSearchParams()
 
-  // const allPages = generatePagination(currentPage, totalPages);
+  const allPages = generatePagination(currentPage, totalPages);
+
+  // There is my way
+  const createPageURL = (page: number) => {
+    let url 
+    // If no pages, and no query
+    if(!params.get('query') && page <= 1){
+      url = `/dashboard/invoices`
+    }
+    // If pages, and no query
+    if(!params.get('query') && page > 1){
+      url = `/dashboard/invoices?page=${page}`
+    }   
+    // If query and pages
+    if(params.get('query') && page > 1){
+      url = `/dashboard/invoices?query=${params.get('query')}&page=${page}`
+    }   
+    // If query and no pages
+    if(params.get('query') && page <= 1){
+      url = `/dashboard/invoices?query=${params.get('query')}`
+    }   
+    return url || ''
+  }
+
+  // and the docs way
+  const pathname = usePathname()
+  const createPageURLDocs = (page: Number) => {
+    const buildInParams = new URLSearchParams(searchParams)
+    console.log(buildInParams)
+    buildInParams.set('page', page.toString());
+    return `${pathname}?${buildInParams.toString()}`;
+  }
+
 
   return (
     <>
       {/* NOTE: comment in this code when you get to this point in the course */}
 
-      {/* <div className="inline-flex">
+      <div className="inline-flex">
         <PaginationArrow
           direction="left"
           href={createPageURL(currentPage - 1)}
@@ -33,12 +69,31 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
             return (
               <PaginationNumber
                 key={page}
-                href={createPageURL(page)}
+                href={createPageURL(Number(page))}
                 page={page}
                 position={position}
                 isActive={currentPage === page}
               />
             );
+
+            /* const className = clsx(
+              'flex h-10 w-10 items-center justify-center text-sm border',
+              {
+                'rounded-l-md': position === 'first' || position === 'single',
+                'rounded-r-md': position === 'last' || position === 'single',
+                'z-10 bg-blue-600 border-blue-600 text-white': currentPage === page,
+                'hover:bg-gray-100': !(currentPage === page) && position !== 'middle',
+                'text-gray-300': position === 'middle',
+              },
+            );
+
+              return (
+                <button key={page} onClick={() => createPageURL(Number(page))} className={className}>
+                  {page}
+                </button>
+              ) */
+
+
           })}
         </div>
 
@@ -47,7 +102,7 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
           href={createPageURL(currentPage + 1)}
           isDisabled={currentPage >= totalPages}
         />
-      </div> */}
+      </div>
     </>
   );
 }
