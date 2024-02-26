@@ -246,3 +246,15 @@ export async function getUser(email: string) {
     throw new Error('Failed to fetch user.');
   }
 }
+
+export const getInvoiceById = async (id: string) => {
+  noStore()
+
+  try {
+    const invoice = await sql`SELECT * FROM invoices WHERE id=${id}`
+    return invoice
+  } catch (err) {
+    console.error('Failed to fetch invoice, err')
+    throw new Error('Failed to fetch invoice.')
+  }
+}
