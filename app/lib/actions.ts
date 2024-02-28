@@ -57,3 +57,30 @@ export const updateInvoice = async (id: string, formData: FormData) => {
   revalidatePath('/dashboard/invoices/')
   redirect('/dashboard/invoices/')
 }
+
+const statusSwitch = z.object({
+  status: z.string()
+})
+
+export const changeStatus = async (id: string, formData: FormData) => {
+  const formObject = {
+    status: formData.get('status')
+  }
+  const { status} = statusSwitch.parse(formObject)
+
+  const query = `UPDATE invoices SET status = ${status} WHERE id = ${id}`
+  console.log(query)
+
+  try {
+    await sql`
+    UPDATE invoices 
+      SET status=${status}
+    WHERE id=${id}
+    `
+  } catch (error) {
+    console.log(error)
+  }
+  revalidatePath('/dashboard/invoices')
+  redirect('/dashboard/invoices');
+
+}
