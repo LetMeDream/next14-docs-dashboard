@@ -61,15 +61,12 @@ export const updateInvoice = async (id: string, formData: FormData) => {
 const statusSwitch = z.object({
   status: z.string()
 })
-
 export const changeStatus = async (id: string, formData: FormData) => {
   const formObject = {
     status: formData.get('status')
   }
   const { status} = statusSwitch.parse(formObject)
-
   const query = `UPDATE invoices SET status = ${status} WHERE id = ${id}`
-  console.log(query)
 
   try {
     await sql`
@@ -83,4 +80,17 @@ export const changeStatus = async (id: string, formData: FormData) => {
   revalidatePath('/dashboard/invoices')
   redirect('/dashboard/invoices');
 
+}
+
+const DeleteInvoice = z.string()
+export const deleteInvoice = async (id: string, formData: FormData) => {
+  const validatedId = DeleteInvoice.parse(id)
+
+  await sql`
+  DELETE FROM invoices 
+  WHERE id = ${id}
+  `
+
+  revalidatePath('/dashboard/invoices/')
+  redirect('/dashboard/invoices/')
 }
