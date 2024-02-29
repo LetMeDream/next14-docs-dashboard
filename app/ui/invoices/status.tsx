@@ -18,10 +18,6 @@ export default function InvoiceStatus({
     index: number
   }) {
   
-  const onChangeStatus = () => {
-    const form: HTMLFormElement = document.getElementById(`form_${index}`) as HTMLFormElement
-    form.requestSubmit()
-  }
   const bindChangeStatus = changeStatus.bind(null, invoice?.id.trim())
   const [newStatus, setNewStatus] = useState('')
 
@@ -33,35 +29,33 @@ export default function InvoiceStatus({
 
   return (
     <>
-      <span
-        className={clsx(
-          'inline-flex items-center rounded-full px-2 py-1 text-xs cursor-pointer relative',
-          {
-            'bg-gray-100 text-gray-500': status === 'pending',
-            'bg-green-500 text-white': status === 'paid',
-          },
-        )}
-        onClick={onChangeStatus}
-      > 
-        {status === 'pending' ? (
-          <>
-            Pending
-            <ClockIcon className="ml-1 w-4 text-gray-500" />
-          </>
-        ) : null}
-        {status === 'paid' ? (
-          <>
-            Paid
-            <CheckIcon className="ml-1 w-4 text-white" />
-          </>
-        ) : null}
-      </span>
       <form 
         id={`form_${index}`}
-        className='hidden'
         action={bindChangeStatus}
       > 
-        <input id='status' name='status' defaultValue={newStatus} />
+        <button
+          className={clsx(
+            'inline-flex items-center rounded-full px-2 py-1 text-xs cursor-pointer relative',
+            {
+              'bg-gray-100 text-gray-500': status === 'pending',
+              'bg-green-500 text-white': status === 'paid',
+            },
+          )}
+        > 
+          {status === 'pending' ? (
+            <>
+              Pending
+              <ClockIcon className="ml-1 w-4 text-gray-500" />
+            </>
+          ) : null}
+          {status === 'paid' ? (
+            <>
+              Paid
+              <CheckIcon className="ml-1 w-4 text-white" />
+            </>
+          ) : null}
+        </button>
+        <input className='hidden' id='status' name='status' defaultValue={newStatus} />
       </form>
     </>
   );
