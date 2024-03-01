@@ -28,11 +28,17 @@ export const createInvoice = async (formData: FormData)  => {
 
     const { customerId, status } = validatedData
 
-    await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
-
+    try {
+      await sql`
+      INSERT INTO invoices (customer_id, amount, status, date)
+      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+      `
+    } catch (error) {
+      console.error(error)
+      return {
+        message: 'there was an error creating the invoice'
+      }
+    }
     revalidatePath('/dashboard/invoices/')
     redirect('/dashboard/invoices/')
 }
@@ -48,12 +54,19 @@ export const updateInvoice = async (id: string, formData: FormData) => {
   const validatedData = UpdateInvoice.parse(dataObject)
   const amountInCents = validatedData.amount * 100 
 
-  await sql`
-  UPDATE invoices 
-  SET amount = ${amountInCents},
-      status = ${validatedData.status}
-  WHERE id = ${id}
-  `
+  try {
+    await sql`
+    UPDATE invoices 
+    SET amount = ${amountInCents},
+        status = ${validatedData.status}
+    WHERE id = ${id}
+    `
+  } catch (error) {
+    console.error(error)
+    return {
+      message: 'there was an error updating the invoice'
+    }
+  }
   revalidatePath('/dashboard/invoices/')
   redirect('/dashboard/invoices/')
 }
@@ -78,19 +91,13 @@ export const changeStatus = async (id: string, formData: FormData) => {
     console.log(error)
   }
   revalidatePath('/dashboard/invoices')
-  redirect('/dashboard/invoices');
-
 }
 
-const DeleteInvoice = z.string()
 export const deleteInvoice = async (id: string, formData: FormData) => {
-  const validatedId = DeleteInvoice.parse(id)
-
-  await sql`
-  DELETE FROM invoices 
-  WHERE id = ${id}
-  `
-
-  revalidatePath('/dashboard/invoices/')
-  redirect('/dashboard/invoices/')
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`
+    revalidatePath('/dashboard/invoices/')
+  } catch (error) {
+    console.error(error)
+  }
 }
