@@ -2,6 +2,7 @@ import React from 'react'
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs'
 import EditInvoiceForm from '@/app/ui/invoices/edit-form'
 import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data'
+import { notFound } from 'next/navigation'
 
 const Page = async (
   {
@@ -15,6 +16,10 @@ const Page = async (
   const customers = await fetchCustomers()
   const invoice = await fetchInvoiceById(params.id)
   console.log(invoice)
+
+  if(!invoice){
+    notFound()
+  }
 
   return (
     <main>
