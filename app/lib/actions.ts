@@ -14,7 +14,7 @@ const FormSchema = z.object({
 })
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true })
-export const createInvoice = async (formData: FormData)  => {
+export const createInvoice = async (prevState: any, formData: FormData)  => {
   
     const dataObject = {
       customerId: formData.get('customerId'),
