@@ -7,35 +7,50 @@ import { redirect } from 'next/navigation'
 
 const FormSchema = z.object({
   id: z.string(),
-  customerId: z.string(),
-  amount: z.coerce.number(),
-  status: z.enum(['pending', 'paid']),
-  date: z.string()
-})
+  customerId: z.string({
+    invalid_type_error: 'Please select a customer.',
+  }),
+  amount: z.coerce
+    .number()
+    .gt(0, { message: 'Please enter an amount greater than $0.' }),
+  status: z.enum(['pending', 'paid'], {
+    invalid_type_error: 'Please select an invoice status.',
+  }),
+  date: z.string(),
+});
 
 export type State = {
   errors?: {
     customerId?: string[],
-    amount: string[],
-    status: string[]
+    amount?: string[],
+    status?: string[]
   },
   message: string | null
 }
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true })
-export const createInvoice = async (prevState: State, formData: FormData)  => {
-  
+export const createInvoice = async (prevState: State, formData: FormData) => {
+
     const dataObject = {
       customerId: formData.get('customerId'),
       amount: formData.get('amount'),
       status: formData.get('status')
     }
 
-    const validatedData = CreateInvoice.parse(dataObject)
-    const amountInCents = validatedData.amount * 100
-    const date = new Date().toISOString().split('T')[0]
+    const validatedFields = CreateInvoice.safeParse(dataObject)
 
-    const { customerId, status } = validatedData
+    // console.log(validatedFields)
+    // If form validation fails, return errors early. Otherwise, continue.
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Missing Fields. Failed to Create Invoice.',
+      };
+    }
+
+    const date = new Date().toISOString().split('T')[0]
+    const { customerId, status, amount } = validatedFields.data
+    const amountInCents = amount * 100
 
     try {
       await sql`
@@ -45,8 +60,8 @@ export const createInvoice = async (prevState: State, formData: FormData)  => {
     } catch (error) {
       console.error(error)
       return {
-        message: 'there was an error creating the invoice'
-      }
+        message: 'Missing Fields. Failed to Create Invoice.',
+      };
     }
     revalidatePath('/dashboard/invoices/')
     redirect('/dashboard/invoices/')
