@@ -9,7 +9,7 @@ const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
     invalid_type_error: 'Please select a customer.',
-  }),
+  }).min(1, { message : 'Please select a customer' }),
   amount: z.coerce
     .number()
     .gt(0, { message: 'Please enter an amount greater than $0.' }),
@@ -28,6 +28,7 @@ export type State = {
   message: string | null
 }
 
+/* CREATE */
 const CreateInvoice = FormSchema.omit({ id: true, date: true })
 export const createInvoice = async (prevState: State, formData: FormData) => {
 
@@ -67,22 +68,32 @@ export const createInvoice = async (prevState: State, formData: FormData) => {
     redirect('/dashboard/invoices/')
 }
 
+/* UPDATE */
 const UpdateInvoice = FormSchema.omit({ id: true, date: true })
-export const updateInvoice = async (id: string, formData: FormData) => {
+export const updateInvoice = async (id: string, prevState: State, formData: FormData) => {
   console.log(formData)
   const dataObject = {
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status')
   }
-  const validatedData = UpdateInvoice.parse(dataObject)
-  const amountInCents = validatedData.amount * 100 
+  const validatedData = UpdateInvoice.safeParse(dataObject)
+
+  if(!validatedData.success){
+    console.log(validatedData.error)
+    return {
+      errors: validatedData.error.flatten().fieldErrors,
+      message: "Missing Fields. The invoice update failed."
+    }
+  }
+
+  const amountInCents = validatedData.data.amount * 100 
 
   try {
     await sql`
     UPDATE invoices 
     SET amount = ${amountInCents},
-        status = ${validatedData.status}
+        status = ${validatedData.data.status}
     WHERE id = ${id}
     `
   } catch (error) {
@@ -94,6 +105,14 @@ export const updateInvoice = async (id: string, formData: FormData) => {
   revalidatePath('/dashboard/invoices/')
   redirect('/dashboard/invoices/')
 }
+
+
+
+
+
+
+
+
 
 const statusSwitch = z.object({
   status: z.string()
